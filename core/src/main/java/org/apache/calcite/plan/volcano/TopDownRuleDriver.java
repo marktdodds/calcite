@@ -556,8 +556,17 @@ class TopDownRuleDriver implements RuleDriver {
       final RelNode finalPassThroughRel = passThroughRel;
       applyGenerator(null, () ->
           planner.register(finalPassThroughRel, group));
-      rel = passThroughRel;
+
+      tasks.push(createOptimizeInputTask(finalPassThroughRel, group));
     }
+    return createOptimizeInputTask(rel, group);
+  }
+
+  /**
+   * Decides how to optimize a physical node. Refactored from above method
+   * @param rel rel.getTraitSet().satisfies(group.getTraitSet()) must be true
+   */
+  private Task createOptimizeInputTask(RelNode rel, RelSubset group) {
     boolean unProcess = false;
     for (RelNode input : rel.getInputs()) {
       RelOptCost winner = ((RelSubset) input).getWinnerCost();
